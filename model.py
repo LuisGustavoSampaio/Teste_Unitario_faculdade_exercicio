@@ -1,181 +1,94 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+# model.py
 
-# C extensions
-*.so
+class Historico:
+    def __init__(self):
+        self.transacoes = []
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+    def adicionar_transacao(self, transacao):
+        self.transacoes.append(transacao)
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+class Conta:
+    def __init__(self, cliente, numero):
+        self.saldo = 0
+        self.numero = numero
+        self.agencia = "0001"
+        self.cliente = cliente
+        self.historico = Historico()
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
+    def sacar(self, valor):
+        if valor > self.saldo:
+            return False
+        self.saldo -= valor
+        return True
 
-# Translations
-*.mo
-*.pot
+    def depositar(self, valor):
+        self.saldo += valor
+        return True
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
 
-# Flask stuff:
-instance/
-.webassets-cache
+class ContaCorrente(Conta):
+    def __init__(self, cliente, numero, limite=500, limite_saques=3):
+        super().__init__(cliente, numero)
+        self.limite = limite
+        self.limite_saques = limite_saques
+        self.saques_realizados = 0
 
-# Scrapy stuff:
-.scrapy
+    def sacar(self, valor):
+        if valor > self.limite:
+            return False
 
-# Sphinx documentation
-docs/_build/
+        if self.saques_realizados >= self.limite_saques:
+            return False
 
-# PyBuilder
-.pybuilder/
-target/
+        if super().sacar(valor):
+            self.saques_realizados += 1
+            return True
 
-# Jupyter Notebook
-.ipynb_checkpoints
+        return False
 
-# IPython
-profile_default/
-ipython_config.py
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
+class Cliente:
+    def __init__(self, nome, cpf, data_nascimento, endereco):
+        self.nome = nome
+        self.cpf = cpf
+        self.data_nascimento = data_nascimento
+        self.endereco = endereco
+        self.contas = []
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+    def adicionar_conta(self, conta):
+        self.contas.append(conta)
 
-# UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#uv.lock
 
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
+class BancoDados:
+    def __init__(self):
+        self.contas = []
 
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
-.pdm.toml
-.pdm-python
-.pdm-build/
+    def adicionar_conta(self, conta):
+        self.contas.append(conta)
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
+    def listar_contas(self):
+        return self.contas
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
 
-# SageMath parsed files
-*.sage.py
+class Transacao:
+    def registrar(self, conta):
+        pass
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 
-# Spyder project settings
-.spyderproject
-.spyproject
+class Deposito(Transacao):
+    def __init__(self, valor):
+        self.valor = valor
 
-# Rope project settings
-.ropeproject
+    def registrar(self, conta):
+        if conta.depositar(self.valor):
+            conta.historico.adicionar_transacao(self)
 
-# mkdocs documentation
-/site
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+class Saque(Transacao):
+    def __init__(self, valor):
+        self.valor = valor
 
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
-
-# Ruff stuff:
-.ruff_cache/
-
-# PyPI configuration file
-.pypirc
-
-# Cursor  
-#  Cursor is an AI-powered code editor.`.cursorignore` specifies files/directories to 
-#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
-#  refer to https://docs.cursor.com/context/ignore-files
-.cursorignore
-.cursorindexingignore
+    def registrar(self, conta):
+        if conta.sacar(self.valor):
+            conta.historico.adicionar_transacao(self)

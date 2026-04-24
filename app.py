@@ -1,30 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Conta</title>
-</head>
-<body>
+from flask import Flask, render_template, request
+from model import Cliente, ContaCorrente, BancoDados
 
-<h1>Criar Conta</h1>
+app = Flask(__name__)
 
-<input type="text" id="nome" placeholder="Nome"><br><br>
-<input type="text" id="cpf" placeholder="CPF"><br><br>
-<input type="number" id="saldo" placeholder="Saldo"><br><br>
+banco = BancoDados()
 
-<button onclick="criarConta()">Criar Conta</button>
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-<h2 id="resultado"></h2>
 
-<script>
-function criarConta() {
-    let nome = document.getElementById("nome").value;
-    let cpf = document.getElementById("cpf").value;
-    let saldo = document.getElementById("saldo").value;
+@app.route("/criar_conta", methods=["POST"])
+def criar_conta():
+    nome = request.form["nome"]
+    cpf = request.form["cpf"]
+    saldo = float(request.form["saldo"])
 
-    document.getElementById("resultado").innerHTML =
-        `Conta criada!<br>Nome: ${nome}<br>CPF: ${cpf}<br>Saldo: ${saldo}`;
-}
-</script>
+    cliente = Cliente(nome, cpf, "01/01/2000", "SP")
+    numero = len(banco.contas) + 1
 
-</body>
-</html>
+    conta = ContaCorrente(cliente, numero)
+    conta.depositar(saldo)
+
+    cliente.adicionar_conta(conta)
+    banco.adicionar_conta(conta)
+
+    return render_template("conta.html", conta=conta)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
