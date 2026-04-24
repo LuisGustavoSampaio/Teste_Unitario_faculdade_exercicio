@@ -48,6 +48,17 @@ class ContaCorrente(Conta):
         return False
 
 
+class ContaPoupanca(Conta):
+    def __init__(self, cliente, numero, taxa_rendimento=0.005):
+        super().__init__(cliente, numero)
+        self.taxa_rendimento = taxa_rendimento
+
+    def aplicar_rendimento(self):
+        rendimento = self.saldo * self.taxa_rendimento
+        self.saldo += rendimento
+        return rendimento
+
+
 class Cliente:
     def __init__(self, nome, cpf, data_nascimento, endereco):
         self.nome = nome
@@ -91,4 +102,11 @@ class Saque(Transacao):
 
     def registrar(self, conta):
         if conta.sacar(self.valor):
+            conta.historico.adicionar_transacao(self)
+
+
+class InvestimentoPoupanca(Transacao):
+    def registrar(self, conta):
+        if hasattr(conta, "aplicar_rendimento"):
+            conta.aplicar_rendimento()
             conta.historico.adicionar_transacao(self)
