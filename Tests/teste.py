@@ -7,7 +7,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from model import Cliente, ContaPoupanca, InvestimentoPoupanca
 
-
 class TestInvestimentoPoupanca(unittest.TestCase):
     def test_deve_aplicar_rendimento_ao_investir_na_poupanca(self):
         # Arrange
